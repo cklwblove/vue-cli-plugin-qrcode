@@ -1,0 +1,9 @@
+{
+  "name": "vue-cli-plugin-qrcode",
+  "version": "0.0.1",
+  "description": "基于 vue-cli3 开发模式下终端生成二维码，设备必须和PC处于同一个网络下",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
