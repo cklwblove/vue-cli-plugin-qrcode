@@ -1,31 +1,63 @@
-const generateQrcode = require('./generateQrcode');
+const chalk = require('chalk');
+const qrCode = require('qrcode-terminal');
 const internalIp = require('internal-ip');
 
-function getLocalIp() {
-  return internalIp.v4.sync();
+function showHostWarning() {
+  console.log(chalk.yellow('devServer.host must be "0.0.0.0" for QR Code to work'));
+  console.log(chalk.yellow('QR Code will not be displayed :('));
 }
+
+function showDevServerWarning() {
+  console.log(chalk.yellow('[vue-cli-plugin-qrcode] No devServer config found'));
+  console.log(chalk.yellow('[vue-cli-plugin-qrcode] No QR code will be displayed'));
+}
+
 module.exports = (api, options) => {
-  let compiler;
   api.chainWebpack((webpackConfig) => {
-    webpackConfig.plugin('webpack-compiler').use({
-      apply(compiler) {
-        compiler = compiler1;
-      }
-    });
-  });
+    webpackConfig.plugin('qrcode-webpack-compiler')
+      .use({
+        apply(compiler, callback) {
+          if (options.devServer) {
+            let didFire = false;
+            compiler.hooks.done.tap('Print QR Code Plugin', () => {
+              if (didFire) {
+                callback && callback();
+                return;
+              }
+              const protocol = options.devServer.https ? 'https' : 'http';
+              const port = options.devServer.port || '';
+              const isHostCorrect =
+                options.devServer.host.trim() === '0.0.0.0';
 
-  api.configureDevServer((webpackConfig) => {
-    const devServer = compiler.options.devServer;
-    if (!devServer) {
-      console.warn('devserver-qrcode-webpack-plugin: needs to start webpack-dev-server');
-      return;
-    }
-    const protocol = devServer.https ? 'https' : 'http';
-    const hostname = getLocalIp();
-    const port = devServer.port;
-    const pathname = devServer.openPage || '';
-    const url = `${protocol}://${hostname}:${port}/${pathname}`;
+              if (!isHostCorrect) {
+                showHostWarning();
+                callback && callback();
+                return;
+              }
 
-    generateQrcode(url);
+              internalIp.v4().then((ip) => {
+                let address = `${protocol}://${ip}${port && `:${port}`}`;
+                const date = new Date();
+                const time = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + ' ' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
+                address = address + (~address.indexOf('?') ? '&t=' : '?') + Date.now();
+                console.log(chalk.green('\n' + time));
+                console.log(chalk.green('\n入口页面地址: ' + address));
+                console.log(chalk.green('\n手机扫描以下二维码可以直接访问: '));
+                qrCode.generate(address, {small: 'true'}, (code) => {
+                  console.log(code);
+                  didFire = true;
+                  callback && callback();
+                });
+              }).catch((err) => {
+                console.log(err);
+                return callback && callback(err);
+              });
+            });
+          } else {
+            showDevServerWarning();
+            callback && callback();
+          }
+        }
+      });
   });
 };

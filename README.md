@@ -1,2 +1,10 @@
 # vue-cli-plugin-qrcode
-Generate a QR code in the terminal
+
+> QR code plugin for vue-cli
+
+## Installing in an Already Created Project
+
+```
+vue add qrcode
+```
+
