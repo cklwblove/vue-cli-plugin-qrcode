@@ -17,45 +17,49 @@ module.exports = (api, options) => {
     webpackConfig.plugin('qrcode-webpack-compiler')
       .use({
         apply(compiler, callback) {
-          if (options.devServer) {
-            let didFire = false;
-            compiler.hooks.done.tap('Print QR Code Plugin', () => {
-              if (didFire) {
-                callback && callback();
-                return;
-              }
-              const protocol = options.devServer.https ? 'https' : 'http';
-              const port = options.devServer.port || '';
-              const isHostCorrect =
-                options.devServer.host.trim() === '0.0.0.0';
-
-              if (!isHostCorrect) {
-                showHostWarning();
-                callback && callback();
-                return;
-              }
-
-              internalIp.v4().then((ip) => {
-                let address = `${protocol}://${ip}${port && `:${port}`}`;
-                const date = new Date();
-                const time = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + ' ' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
-                address = address + (~address.indexOf('?') ? '&t=' : '?') + Date.now();
-                console.log(chalk.green('\n' + time));
-                console.log(chalk.green('\n入口页面地址: ' + address));
-                console.log(chalk.green('\n手机扫描以下二维码可以直接访问: '));
-                qrCode.generate(address, {small: 'true'}, (code) => {
-                  console.log(code);
-                  didFire = true;
+          if (process.env.NODE_ENV === 'development') {
+            if (options.devServer) {
+              let didFire = false;
+              compiler.hooks.done.tap('Print QR Code Plugin', () => {
+                if (didFire) {
                   callback && callback();
+                  return;
+                }
+                const protocol = options.devServer.https ? 'https' : 'http';
+                const port = options.devServer.port || '';
+                const isHostCorrect =
+                  options.devServer.host.trim() === '0.0.0.0';
+
+                if (!isHostCorrect) {
+                  showHostWarning();
+                  callback && callback();
+                  return;
+                }
+
+                internalIp.v4().then((ip) => {
+                  let address = `${protocol}://${ip}${port && `:${port}`}`;
+                  const date = new Date();
+                  const time = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + ' ' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
+                  address = address + (~address.indexOf('?') ? '&t=' : '?') + Date.now();
+                  console.log(chalk.green('\n' + time));
+                  console.log(chalk.green('\n入口页面地址: ' + address));
+                  console.log(chalk.green('\n手机扫描以下二维码可以直接访问: '));
+                  qrCode.generate(address, {small: 'true'}, (code) => {
+                    console.log(code);
+                    didFire = true;
+                    callback && callback();
+                  });
+                }).catch((err) => {
+                  console.log(err);
+                  return callback && callback(err);
                 });
-              }).catch((err) => {
-                console.log(err);
-                return callback && callback(err);
               });
-            });
+            } else {
+              showDevServerWarning();
+              callback && callback();
+            }
           } else {
-            showDevServerWarning();
-            callback && callback();
+            console.log(chalk.yellow('[vue-cli-plugin-qrcode] process.env.NODE_ENV value must be development'));
           }
         }
       });

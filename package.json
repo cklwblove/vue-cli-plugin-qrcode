@@ -1,6 +1,6 @@
 {
   "name": "vue-cli-plugin-qrcode",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "vue cli的终端二维码插件，设备必须和PC处于同一个网络下",
   "main": "index.js",
   "repository": {
