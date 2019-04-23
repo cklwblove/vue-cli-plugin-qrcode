@@ -59,7 +59,7 @@ module.exports = (api, options) => {
               callback && callback();
             }
           } else {
-            console.log(chalk.yellow('[vue-cli-plugin-qrcode] process.env.NODE_ENV value must be development'));
+            // console.log(chalk.yellow('[vue-cli-plugin-qrcode] process.env.NODE_ENV value must be development'));
           }
         }
       });
