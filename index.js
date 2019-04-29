@@ -19,12 +19,7 @@ module.exports = (api, options) => {
         apply(compiler, callback) {
           if (process.env.NODE_ENV === 'development') {
             if (options.devServer) {
-              let didFire = false;
-              compiler.hooks.done.tap('Print QR Code Plugin', () => {
-                if (didFire) {
-                  callback && callback();
-                  return;
-                }
+              compiler.hooks.afterEmit.tap('Print QR Code Plugin', () => {
                 const protocol = options.devServer.https ? 'https' : 'http';
                 const port = options.devServer.port || '';
                 const isHostCorrect =
@@ -45,8 +40,7 @@ module.exports = (api, options) => {
                   console.log(chalk.green('\n入口页面地址: ' + address));
                   console.log(chalk.green('\n手机扫描以下二维码可以直接访问: '));
                   qrCode.generate(address, {small: 'true'}, (code) => {
-                    console.log(code);
-                    didFire = true;
+                    // console.log(code);
                     callback && callback();
                   });
                 }).catch((err) => {
