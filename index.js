@@ -40,7 +40,7 @@ module.exports = (api, options) => {
                   console.log(chalk.green('\n入口页面地址: ' + address));
                   console.log(chalk.green('\n手机扫描以下二维码可以直接访问: '));
                   qrCode.generate(address, {small: 'true'}, (code) => {
-                    // console.log(code);
+                    console.log(code);
                     callback && callback();
                   });
                 }).catch((err) => {
